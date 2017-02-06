@@ -37,15 +37,34 @@
     }
   }
 
+  function _toggleDisabledState($element, state) {
+    var $target;
+    if ($element.hasClass('checkbox-inline') || $element.hasClass('radio-inline')) {
+      $target = $element;
+    } else {
+      $target = $element.closest('.checkbox').length ? $element.closest('.checkbox') : $element.closest('.radio');
+    }
+    return $target.toggleClass('disabled', state);
+  }
+
   function _toggleTypeFocus($input) {
+    var disabledToggleType = false;
+    if ($input.is($.material.options.checkboxElements) || $input.is($.material.options.radioElements)) {
+      disabledToggleType = true;
+    }
     $input.closest('label').hover(function () {
-      var $i = $(this).find('input');
-      if (!$i.prop('disabled')) { // hack because the _addFormGroupFocus() wasn't identifying the property on chrome
-        _addFormGroupFocus($i);     // need to find the input so we can check disablement
-      }
-    }, function () {
-      _removeFormGroupFocus($(this).find('input'));
-    });
+        var $i = $(this).find('input');
+        var isDisabled = $i.prop('disabled'); // hack because the _addFormGroupFocus() wasn't identifying the property on chrome
+        if (disabledToggleType) {
+          _toggleDisabledState($(this), isDisabled);
+        }
+        if (!isDisabled) {
+          _addFormGroupFocus($i);     // need to find the input so we can check disablement
+        }
+      },
+      function () {
+        _removeFormGroupFocus($(this).find('input'));
+      });
   }
 
   function _removeFormGroupFocus(element) {
@@ -165,9 +184,6 @@
       var validate = this.options.validate;
 
       $(document)
-        .on("change", ".checkbox input[type=checkbox]", function () {
-          $(this).blur();
-        })
         .on("keydown paste", ".form-control", function (e) {
           if (_isChar(e)) {
             $(this).closest(".form-group").removeClass("is-empty");
@@ -279,7 +295,6 @@
     },
     "init": function (options) {
       this.options = $.extend({}, this.options, options);
-      var $document = $(document);
 
       if ($.fn.ripples && this.options.ripples) {
         this.ripples();
@@ -304,27 +319,27 @@
 
       if (document.arrive && this.options.arrive) {
         if ($.fn.ripples && this.options.ripples) {
-          $document.arrive(this.options.withRipples, function () {
+          document.arrive(this.options.withRipples, function () {
             $.material.ripples($(this));
           });
         }
         if (this.options.input) {
-          $document.arrive(this.options.inputElements, function () {
+          document.arrive(this.options.inputElements, function () {
             $.material.input($(this));
           });
         }
         if (this.options.checkbox) {
-          $document.arrive(this.options.checkboxElements, function () {
+          document.arrive(this.options.checkboxElements, function () {
             $.material.checkbox($(this));
           });
         }
         if (this.options.radio) {
-          $document.arrive(this.options.radioElements, function () {
+          document.arrive(this.options.radioElements, function () {
             $.material.radio($(this));
           });
         }
         if (this.options.togglebutton) {
-          $document.arrive(this.options.togglebuttonElements, function () {
+          document.arrive(this.options.togglebuttonElements, function () {
             $.material.togglebutton($(this));
           });
         }
